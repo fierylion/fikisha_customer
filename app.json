@@ -27,7 +27,7 @@
     ],
     "ios": {
       "config": {
-        "googleMapsApiKey": "Fill your own key here"
+        "googleMapsApiKey": "keys here"
       },
       "supportsTablet": true
     },
