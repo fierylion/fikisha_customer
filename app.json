@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Fikisha",
+    "slug": "Fikisha",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ]
+    ],
+  
+    "splash": {
+      "image": "./assets/images/fikishaLogo.png",
+      "resizeMode": "center",
+      "backgroundColor": "#001125",
+       "showDuration": 3000,
+      "fadeOutDuration": 1000
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "config": {
+        "googleMapsApiKey": "Fill your own key here"
+      },
+      "supportsTablet": true
+    },
+    "android": {
+       "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBP3AWvc5kUTn8VwRLjQxxLUt3yj8izYT0"
+        }
+      },
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/fikishaLogo.png",
+        "backgroundColor": "#001125"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "backgroundColor":"#001125"
+  }
+}
