@@ -4,8 +4,9 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
 } from 'react-native'
+import Toast from 'react-native-toast-message'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
@@ -17,25 +18,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { storeAuthData } from '../store/authSlice'
 import { useDispatch } from 'react-redux'
 import AlertMessage from '../components/AlertMessage'
+import Spinner from 'react-native-loading-spinner-overlay'
 const registerSchema = yup.object({
-  email: yup
-    .string()
+  phone: yup
+    .string('Invalid Phone Number')
     .required('This field is required!')
-    .email('Must be an email!'),
+    .test('len', 'Invalid phone number', (val) => val.length === 10),
   password: yup
     .string()
     .required('This field is required!')
     .min(4, 'Must be at least 4 characters!'),
- 
- 
 })
 const Login = () => {
   const { isLoading, error, data, obtainData } = useFetch()
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const handleSubmit = (values) => {
-    const { email, password } = values
-    obtainData('/login/customer', 'post', { email, password })
+    const { phone, password } = values
+    obtainData('/login/customer', 'post', { phone, password })
   }
   React.useEffect(() => {
     const storeUserData = async (data) => {
@@ -54,7 +54,11 @@ const Login = () => {
       storeUserData(data)
     }
     if (error) {
-      console.log(error)
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Invalid Credentials!',
+      })
     }
   }, [data, error])
   return (
@@ -62,27 +66,22 @@ const Login = () => {
       {/* <Text className='text-3xl text-red-600'>Introducti</Text> */}
       <StatusBar barStyle='dark-content' backgroundColor='#000000' />
       <ScrollView className='flex-1 ' keyboardShouldPersistTaps={'handled'}>
-        {error && (
-          <AlertMessage message={'There was an error!'} color={'normal'} />
-        )}
-        {isLoading && (
-          <AlertMessage message={'Loading.....'} color={'normal'} />
-        )}
+        <Spinner visible={isLoading} />
         <View className='mx-auto mt-28   '>
-          <Text className='text-custom_white-700 text-center font-bold mb-2'>
+          <Text className='text-custom_white-700 text-center font-bold mb-2 text-xl'>
             Sign In
           </Text>
-          <Text className='text-custom_white-700 opacity-75'>
+          <Text className='text-custom_white-700 opacity-75 text-lg'>
             Access account
           </Text>
         </View>
         <KeyboardAvoidingView
-        behavior="padding" // You can choose 'height' or 'position' as well
-      style={{ flex: 1 }}
+          behavior='padding' // You can choose 'height' or 'position' as well
+          style={{ flex: 1 }}
         >
           <View>
             <Formik
-              initialValues={{ email: '', password: '', confirmPassword: '' }}
+              initialValues={{ phone: '', password: '', confirmPassword: '' }}
               validationSchema={registerSchema}
               onSubmit={(values, actions) => {
                 handleSubmit(values)
@@ -92,15 +91,18 @@ const Login = () => {
               {(props) => (
                 <View className='mx-2 mt-10'>
                   <View className='mb-4'>
-                    <Text className='px-4 text-custom_white-700'>Email</Text>
+                    <Text className='px-4 text-custom_white-700'>
+                      Phone Number
+                    </Text>
                     <TextInput
+                      keyboardType='numeric'
                       className='bg-custom_blue-500 text-custom_white-700 rounded-lg px-4 py-2 w-11/12 mx-auto my-2'
-                      onChangeText={props.handleChange('email')}
-                      value={props.values.email}
-                      onBlur={props.handleBlur('email')}
+                      onChangeText={props.handleChange('phone')}
+                      value={props.values.phone}
+                      onBlur={props.handleBlur('phone')}
                     />
                     <Text className='px-4 font-light text-custom_silver-500 opacity-80 '>
-                      {props.touched.email && props.errors.email}
+                      {props.touched.phone && props.errors.phone}
                     </Text>
                   </View>
                   <View className='mb-4'>
@@ -108,6 +110,7 @@ const Login = () => {
                       Passsword
                     </Text>
                     <TextInput
+                      secureTextEntry={true}
                       blurOnSubmit={false}
                       className='bg-custom_blue-500 text-custom_white-700 rounded-lg px-4 py-2 w-11/12 mx-auto my-2'
                       onChangeText={props.handleChange('password')}
@@ -122,7 +125,7 @@ const Login = () => {
                   <TouchableOpacity
                     onPress={props.handleSubmit}
                     onBlur={false}
-                    className='p-5 rounded-3xl my-5 mb-16 bg-custom_blue-200 opacity-75'
+                    className='p-5 rounded-3xl my-5  bg-custom_blue-200 opacity-75'
                   >
                     <Text className='text-center text-custom_white-700 font-black tracking-wider'>
                       Sign In

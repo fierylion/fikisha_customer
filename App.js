@@ -3,6 +3,7 @@ import { StyleSheet, Text, View,Button } from 'react-native';
 
 import { Provider, useDispatch } from 'react-redux';
 import {store} from './store'
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 import Navigation from './Navigation';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +25,7 @@ import {
 } from '@expo-google-fonts/open-sans'
 import GestureHandlerRootView from 'react-native-gesture-handler';
 import 'react-native-gesture-handler'
+import Toast from 'react-native-toast-message';
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -44,12 +46,17 @@ export default function App() {
   if (!fontsLoaded) {
     return <AppLoading />
   }
-  
+  const queryClient =new QueryClient();
   return (
     
     <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
 
     <Navigation/>
+    </QueryClientProvider>
+    <Toast config={
+      OpenSans_600SemiBold
+    }/>
    
     </Provider>
   )

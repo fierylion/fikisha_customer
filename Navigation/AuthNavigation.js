@@ -11,6 +11,8 @@ import Confirmation from '../screens/Confirmation'
 import OrderPlaced from '../screens/OrderPlaced'
 import ChangePassword from '../screens/settings/DetailsEdit/ChangePassword'
 import EditProfile from '../screens/settings/DetailsEdit/EditProfile'
+import OrderDetails from '../screens/OrderDetails'
+import OrderTracking from '../screens/OrderTracking'
 import {
   About,
   Terms,
@@ -48,6 +50,10 @@ export default function AuthNavigation() {
         <Stack.Screen name='Confirmation' component={Confirmation} />
         <Stack.Screen name='OrderPlaced' component={OrderPlaced}/>
         
+      </Stack.Group>
+      <Stack.Group>
+        <Stack.Screen name='OrderDetails' component={OrderDetails} />
+        <Stack.Screen name='OrderTracking' component={OrderTracking} />
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen name='About' component={About} />

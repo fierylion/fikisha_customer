@@ -44,6 +44,9 @@ const requestSlice = createSlice({
   name: 'request',
   initialState,
   reducers: {
+    clearData: (state, action) => {
+      state = initialState
+    },
     
     modifyData: (state, action) => {
       const { data, type } = action.payload

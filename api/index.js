@@ -1,2 +1,2 @@
-import {api} from './base'
-export {api}
+import {api, apiWS} from './base'
+export {api, apiWS}

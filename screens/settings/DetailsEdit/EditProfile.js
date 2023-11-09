@@ -1,39 +1,49 @@
-import { View, Text, StatusBar, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView } from 'react-native'
+import {
+  View,
+  Text,
+  StatusBar,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+} from 'react-native'
 import React, { useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import * as Icon from 'react-native-feather'
+import { useSelector } from 'react-redux'
 
 const EditProfile = () => {
   const navigation = useNavigation()
-
-  const [firstName, setFirstName] = React.useState('Daniel')
+  const user_data = useSelector((state) => state.auth.user_data)
+  const [firstName, setFirstName] = React.useState(user_data?.customer?.name)
   const [lastName, setLastName] = React.useState('Mawalla')
 
   const [email, setEmail] = React.useState('mawalladaniel2021@gmail.com')
-  const [phone, setPhone] = React.useState('+255628630936')
+  const [phone, setPhone] = React.useState(user_data?.customer?.phone)
+  
   const fields = [
     {
-      title: 'First Name',
+      title: 'Full Name',
       value: firstName,
       setValue: setFirstName,
       placeholder: 'Enter your first name',
       SvgIcon: Icon.User,
     },
-    {
-      title: 'Last Name',
-      value: lastName,
-      setValue: setLastName,
-      placeholder: 'Enter your last name',
-      SvgIcon: Icon.User,
-    },
-    {
-      title: 'Email',
-      value: email,
-      setValue: setEmail,
-      placeholder: 'Enter your email',
-      SvgIcon: Icon.Mail,
-    },
+    // {
+    //   title: 'Last Name',
+    //   value: lastName,
+    //   setValue: setLastName,
+    //   placeholder: 'Enter your last name',
+    //   SvgIcon: Icon.User,
+    // },
+    // {
+    //   title: 'Email',
+    //   value: email,
+    //   setValue: setEmail,
+    //   placeholder: 'Enter your email',
+    //   SvgIcon: Icon.Mail,
+    // },
     {
       title: 'Phone',
       value: phone,
@@ -62,13 +72,16 @@ const EditProfile = () => {
       <View className='h-20'></View>
       <View className='rounded-t-3xl h-full w-full bg-custom_white-400'>
         <ScrollView>
-          <KeyboardAvoidingView behavior='padding' >
+          <KeyboardAvoidingView behavior='padding'>
             <View className='ml-3 mt-8'>
               {fields.map((field, ind) => (
                 <SingleInput {...field} key={ind} />
               ))}
             </View>
-            <TouchableOpacity className='p-4 mx-5 bg-custom_blue-500 rounded-lg mt-10' onPress={()=>console.log(firstName, lastName, email)}>
+            <TouchableOpacity
+              className='p-4 mx-5 bg-custom_blue-500 rounded-lg mt-10'
+              onPress={() => console.log(firstName, lastName, email)}
+            >
               <Text className='text-custom_white-100 text-center font-sanBold_500'>
                 Save Changes
               </Text>
@@ -80,22 +93,19 @@ const EditProfile = () => {
     </SafeAreaView>
   )
 }
-const SingleInput = ({ title, value, setValue, placeholder, SvgIcon}) => {
+const SingleInput = ({ title, value, setValue, placeholder, SvgIcon }) => {
   const [isFocused, setIsFocused] = useState(false)
-  const inputRef = useRef();
-  const handleEdit = ()=>{
-   
-    inputRef.current?.focus();
+  const inputRef = useRef()
+  const handleEdit = () => {
+    inputRef.current?.focus()
   }
-   const handleFocus = () => {
-  
-     setIsFocused(true)
-   }
+  const handleFocus = () => {
+    setIsFocused(true)
+  }
 
-   const handleBlur = () => {
-    
-     setIsFocused(false)
-   }
+  const handleBlur = () => {
+    setIsFocused(false)
+  }
 
   return (
     <View className=' my-4'>
@@ -129,8 +139,5 @@ const SingleInput = ({ title, value, setValue, placeholder, SvgIcon}) => {
     </View>
   )
 }
-
-
-
 
 export default EditProfile

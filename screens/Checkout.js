@@ -1,4 +1,4 @@
-import { View, Text, StatusBar,TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Alert} from 'react-native'
+import { View, Text, StatusBar,TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Alert, Pressable, ActivityIndicator} from 'react-native'
 import React, {useEffect, useState} from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { BackHandler } from 'react-native'
@@ -8,6 +8,9 @@ import { modifyData } from '../store/requestSlice'
 import { useSelector, useDispatch } from 'react-redux'
 import * as Location from 'expo-location'
 import useObtainGeocode from '../hooks/useObtainGeocode'
+import { useMutation } from '@tanstack/react-query'
+import { api } from '../api'
+import Toast from 'react-native-toast-message'
 const Checkout = () => {
   // Add a listener for the hardware back button
   const navigation =useNavigation()
@@ -93,7 +96,52 @@ const Checkout = () => {
     reverseGeocode(data.location, typeClicked.toUpperCase())
 
   }, [data.location])
-  
+  const user_data = useSelector(state=>state.auth.user_data)
+  const fetchLocation = async ( location_id)=>{
+    const res = await api.get(`/customer/location/${location_id}`, {
+      headers: {
+        Authorization: `Bearer ${user_data.token}`
+      }
+    })
+    return res.data
+  }
+  const [locationId, setLocationId] = useState()
+  const {mutate, isLoading} = useMutation((locationId)=>fetchLocation(locationId), {
+    onSuccess: ({location})=>{
+      const {name,phone} = location
+      const savedLocation = JSON.parse(location.location)
+
+      
+      dispatch(modifyData({data: name, type: typeClicked.toUpperCase() + '_NAME'}))
+      dispatch(modifyData({data: phone, type: typeClicked.toUpperCase() + '_PHONE'}))
+      dispatch(modifyData({data: {
+        ...savedLocation, 
+        latitudeDelta: 0.003,
+        longitudeDelta: 0.003,
+      }, type: typeClicked.toUpperCase() + '_LOCATION'}))
+      dispatch(modifyData({data: savedLocation.geocode, type: typeClicked.toUpperCase() + '_GEOCODE'}))
+      Toast.show({
+        type: 'success',
+        text1: 'Location ID Found',
+        text2: 'Location ID found and loaded successfully',
+   
+      
+      })
+    },
+    onError: (err)=>{
+    Toast.show({
+      type: 'error',
+      text1: 'Invalid Location ID',
+      text2: 'Provided location id is invalid',
+      visibilityTime: 4000,
+      autoHide: true,
+      topOffset: 30,
+      bottomOffset: 40,
+    })
+    
+    }
+  }
+  )
   return (
     <SafeAreaView
       className=' flex-1 bg-custom_white-500 font-sanBold_500'
@@ -143,10 +191,11 @@ const Checkout = () => {
                 width={15}
               />
               <Text className='text-custom_white-100 my-auto text-xs font-sanSmall_300'>
-                {(geocode)?geocode: (data?.location?.latitude.toFixed(4).toString() +
-                  ',' +
-                  data?.location?.longitude.toFixed(4).toString())}
-                
+                {geocode
+                  ? geocode
+                  : data?.location?.latitude.toFixed(4).toString() +
+                    ',' +
+                    data?.location?.longitude.toFixed(4).toString()}
               </Text>
             </View>
           </View>
@@ -161,7 +210,7 @@ const Checkout = () => {
                     type: typeClicked.toUpperCase(),
                     location: data?.location,
                     geocode,
-                    loading
+                    loading,
                   },
                 })
               }
@@ -174,22 +223,29 @@ const Checkout = () => {
               </Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity className='bg-custom_blue-600 rounded-lg my-3  p-3 w-100'>
-            <Text className='text-custom_white-100  text-center '>
-              Share Location
-            </Text>
-          </TouchableOpacity>
+
           <View className='flex-row'>
             <TextInput
               placeholder='Use Location ID(eg. FK456 ))'
-              className='border  rounded-l-lg px-4 py-0.5 w-[85%] my-2 shadow'
-              // onChangeText={()=>{}}
+              className='border  rounded-l-lg px-5 py-2 w-[85%] my-2 shadow'
+              onChangeText={(e) => {
+                setLocationId(e)
+              }}
               // value={props.values.email}
               // onBlur={}
             />
-            <View className='my-auto border w-[15%] rounded-r-lg py-1 px-2  bg-custom_blue-500'>
-              <Icon.Search className='text-custom_white-100 ' />
-            </View>
+            <Pressable
+              className='my-auto border w-[15%] rounded-r-lg py-2.5 px-2  bg-custom_blue-500'
+              onPress={() => mutate(locationId)}
+            >
+              <View className=''>
+                {isLoading ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Icon.Search className='text-custom_white-100 ' />
+                )}
+              </View>
+            </Pressable>
           </View>
         </View>
         {

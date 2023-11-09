@@ -26,7 +26,7 @@ const Profile = () => {
   const { width } = useWindowDimensions()
   const bottomSheetModalRef = React.useRef(null)
   const [isOpen, setIsOpen] = React.useState(false)
-  const snapPoints = React.useMemo(() => ['90%', '90%'], [])
+  const snapPoints = React.useMemo(() => ['75%', '75%'], [])
   const navigation = useNavigation();
   function handlePresentModal(){
     bottomSheetModalRef.current?.present()
@@ -82,7 +82,7 @@ const Profile = () => {
                       className='w-28 rounded-lg p-2  bg-custom_white-500'
                     >
                       <View>
-                        <Pressable className='flex justify-center' onPress={()=>{
+                        <Pressable className='flex justify-center items-center' onPress={()=>{
                           
                           
                           if(feature.label === 'Logout'){
@@ -100,7 +100,7 @@ const Profile = () => {
                             navigation.navigate(feature.label)
                           }
                         }}>
-                          <feature.img width={100} height={80} />
+                          <feature.img width={50} height={50} className='mx-auto' />
 
                           <Text className=' text-custom_blue-500 text-sm font-sanBold_500 text-center'>
                             {feature.name}

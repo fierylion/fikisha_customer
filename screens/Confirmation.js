@@ -13,6 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import MapRoute from '../components/MapRoute'
 import useObtainDistance  from '../hooks/useObtainDistance'
 import useFetch from '../hooks/useFetch'
+import { useQueryClient } from '@tanstack/react-query'
 // import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated'
 const Confirmation = () => {
   
@@ -135,12 +136,14 @@ const calculatePriceSharing = ({ value, unit }) => {
 
    
    }
+   const queryClient = useQueryClient()
 
    useEffect(
     ()=>{
       if(data){
         console.log(data)
           navigation.navigate('OrderPlaced')
+          queryClient.invalidateQueries({queryKey:['pendingOrders']})
       }
       if(fetchError){
       console.log(fetchError)

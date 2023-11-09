@@ -54,7 +54,7 @@ function HomeTabs() {
               </View>
             )
           },
-          tabBarBadge: 3,
+        
           tabBarBadgeStyle: { color: 'blue',paddingHorizontal:4  },
         }}
       />

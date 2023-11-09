@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, KeyboardAvoidingView, Pressable } from 'react-native'
+import { View, Text, ScrollView, KeyboardAvoidingView, Pressable, Clipboard , TouchableOpacity} from 'react-native'
 import React, { useEffect, useRef } from 'react'
 import { BackHandler } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
@@ -13,6 +13,14 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { useSelector } from 'react-redux'
+import { useQuery } from '@tanstack/react-query'
+import Spinner from 'react-native-loading-spinner-overlay'
+import { formatDate, shortText } from '../../lib/utils'
+import { api } from '../../api'
+import Toast from 'react-native-toast-message'
+
+
 const LocationID = () => {
      const navigation = useNavigation()
      
@@ -35,42 +43,28 @@ const LocationID = () => {
   const [location, setLocation] = React.useState(null)
   const [showModal, setShowModal] = React.useState(false)
    const bottomSheetModalRef = useRef(null)
-  useEffect(() => {
-    if(location) bottomSheetModalRef.current?.present();
+ 
+  const presentModal = () => {
+    bottomSheetModalRef.current?.present()
+  }
+  const user_data = useSelector(state=>state.auth.user_data)
+  const fetchLocations = async ()=>{
+    const res = await api.get('/customer/locations/all',{
+      headers:{
+        Authorization: `Bearer ${user_data.token}`
+      }
 
-  }, [location])
-  const data = [
-    {
-      locID: 'FK212B',
-      geocode: 'Mwenge, g345b, Daresalaam',
-      latLng: { longitude: 0.23, latitude: 0.22 },
-      created_at: '2022, July 2 00:00',
-    },
-    {
-      locID: 'FK212B',
-      geocode: 'Mwenge, g345b, Daresalaam',
-      latLng: { longitude: 0.03, latitude: 0.02 },
-      created_at: '2022, July 2 00:00',
-    },
-    {
-      locID: 'FK212B',
-      geocode: 'Mwenge, g345b, Daresalaam',
-      latLng: { longitude: 0.03, latitude: 0.02 },
-      created_at: '2022, July 2 00:00',
-    },
-    {
-      locID: 'FK212B',
-      geocode: 'Mwenge, g345b, Daresalaam',
-      latLng: { longitude: 0.23, latitude: 0.02 },
-      created_at: '2022, July 2 00:00',
-    },
-    {
-      locID: 'FK212B',
-      geocode: 'Mwenge, g345b, Daresalaam',
-      latLng: { longitude: 0.03, latitude: 0.02 },
-      created_at: '2022, July 2 00:00',
-    },
-  ]
+    } )
+
+    return res.data 
+  }
+const {data, isLoading, isError, error} = useQuery(
+  {
+    queryKey: ['locations'],
+    queryFn: fetchLocations,
+
+  }
+)
  
 const snapPoints = ['80%', '80%']
   return (
@@ -82,18 +76,7 @@ const snapPoints = ['80%', '80%']
         <BottomSheetModalProvider>
           {/* <Text className='text-3xl text-red-600'>Introducti</Text> */}
           <StatusBar barStyle='dark-content' backgroundColor='#808080' />
-          <View className='mt-1 flex flex-row items-center mx-3'>
-            <Icon.ArrowLeft
-              color={'gray'}
-              height={30}
-              width={30}
-              onPress={() => navigation.goBack()}
-            />
-            <Text className='mx-auto font-sanBold_500 text-lg'>
-              Create Location ID
-            </Text>
-            <Icon.ArrowLeft />
-          </View>
+        <Spinner visible={isLoading}/>
           <View className='h-20'></View>
           <View className='rounded-t-3xl h-full w-full bg-custom_white-400'>
             <KeyboardAvoidingView behavior='padding'>
@@ -109,15 +92,23 @@ const snapPoints = ['80%', '80%']
               </View>
               <ScrollView>
                 <View className='ml-4 mt-8'>
-                  {data.map((item, index) => (
+                  { data && data.locations.map((item, index) => {
+                    
+                    const created_at  = formatDate(item.created_at)
+                    const location = JSON.parse(item.location)
+                    const geocode = shortText(location.geocode, 40)
+                    const locID = item.fkID
+                    return (
+                    
                     <SingleLocation
-                      locID={item.locID}
-                      geocode={item.geocode}
-                      latLng={item.latLng}
+                    presentModal = {presentModal}
+                      locID={locID}
+                      geocode={geocode}
+                      latLng={location}
                       setLatLng={setLocation}
-                      created_at={item.created_at}
+                      created_at={created_at}
                     />
-                  ))}
+                  )})}
                 </View>
               </ScrollView>
             </KeyboardAvoidingView>
@@ -154,42 +145,58 @@ const snapPoints = ['80%', '80%']
   )
 }
 
-const SingleLocation = ({locID, geocode, latLng, setLatLng, created_at}) => {
+const SingleLocation = ({locID, geocode, latLng, setLatLng, created_at, presentModal}) => {
   const handleDelete = ()=>{
     console.log('Deleted', locID)
   }
   return (
-    <View className='my-3 flex flex-row justify-between'>
-      <View>
-        <View className='flex flex-row '>
-          <Text className='font-sanBold_500 text-gray-600'>{locID}</Text>
-          <Text  className='text-xs font-sanLight_300 self-end ml-1'>{created_at}</Text>
+    <TouchableOpacity onPress={()=>{
+      Clipboard.setString(locID)
+      Toast.show(
+        {
+          type:'success',
+          text1:'Copied Location Id',
+          text2:'Share for easy location'
+        }
+      )
+    }}>
+      <View className='my-3 flex flex-row justify-between'>
+        <View>
+          <View className='flex flex-row '>
+            <Text className='font-sanBold_500 text-gray-600'>{locID}</Text>
+            <Text className='text-xs font-sanLight_300 self-end ml-1'>
+              {created_at}
+            </Text>
+          </View>
+          <View className='flex flex-row mt-2'>
+            <Icon.MapPin
+              width={20}
+              height={20}
+              className='mr-1 text-custom_blue-200'
+            />
+            <Text className='text-xs font-sanBold_500 text-gray-600'>
+              {geocode}
+            </Text>
+          </View>
         </View>
-        <View className='flex flex-row mt-2'>
-          <Icon.MapPin
+        <View className='flex flex-row mt-2 mr-5'>
+          <Icon.Eye
             width={20}
             height={20}
-            className='mr-1 text-custom_blue-200'
+            className='mr-4 text-custom_white-600'
+            onPress={() => {
+              setLatLng(latLng)
+              presentModal()
+            }}
           />
-          <Text className='text-xs font-sanBold_500 text-gray-600'>
-            {geocode}
-          </Text>
+          <Icon.Delete
+            width={20}
+            height={20}
+            className='mr-2  text-custom_orange-500'
+            onPress={handleDelete}
+          />
         </View>
       </View>
-      <View className='flex flex-row mt-2 mr-5'>
-        <Icon.Eye
-          width={20}
-          height={20}
-          className='mr-4 text-custom_white-600'
-          onPress={() => setLatLng(latLng)}
-        />
-        <Icon.Delete
-          width={20}
-          height={20}
-          className='mr-2  text-custom_orange-500'
-          onPress={handleDelete}
-        />
-      </View>
-    </View>
+    </TouchableOpacity>
   )}
 export default LocationID
